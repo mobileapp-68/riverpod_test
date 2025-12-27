@@ -20,6 +20,12 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final text = ref.watch(helloWorldProvider);
-    return MaterialApp(home: Text(text));
+    return MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: Text(text),
+        ),
+      ),
+    );
   }
 }
