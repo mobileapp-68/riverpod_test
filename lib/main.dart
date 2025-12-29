@@ -43,6 +43,29 @@ final totoFutureProvider = FutureProvider<List<TodoData>>(
   },
 );
 
+class TodoAsyncNotifier extends AsyncNotifier {
+  @override
+  build() async {
+    <TodoData>[
+      TodoData(id: 0, title: 'Todo 0'),
+      TodoData(id: 1, title: 'Todo 1'),
+      TodoData(id: 2, title: 'Todo 2'),
+    ];
+  }
+
+  void addTodo() async {
+    state = AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final List<TodoData> todos = state.value ?? [];
+      int id = todos.map((todo) => todo.id).reduce(max) + 1;
+      final newTodos = [...todos, TodoData(id: id, title: "Todo $id")];
+      return newTodos;
+    });
+  }
+}
+
+final todoAsyncNotifierProvider = AsyncNotifierProvider(TodoAsyncNotifier.new);
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
