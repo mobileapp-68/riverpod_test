@@ -203,4 +203,12 @@ return todos.when(
  );
 ```
 
+#### What is AsyncValue?
+
+- The `ref.watch(todoFutureProvider)` returns an `AsyncValue` object.
+- `AsyncValue` is a union type that represents the state of an asynchronous operation.
+- `AsyncValue` has three states: `data`, `loading`, and `error`.
+
+#### Note
+
 - Experiment with the value of `rand` in the provider to see different states.
