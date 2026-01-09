@@ -1,12 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:math';
 
 void main() {
   runApp(
     // Wrap the entire app in ProviderScope
-    ProviderScope(child: const MyApp()),
+    ProviderScope(
+      child: const MyApp(),
+      retry: (retryCount, error) => null,
+    ),
   );
 }
+
+final todoFutureProvider = FutureProvider<List<TodoData>>(
+  (ref) async {
+    await Future.delayed(Duration(seconds: 1));
+
+    double rand = Random().nextDouble();
+    // Simulate a success or failure based on random value
+    if (rand > 1) {
+      return <TodoData>[
+        TodoData(id: 0, title: 'Todo 0'),
+        TodoData(id: 1, title: 'Todo 1'),
+        TodoData(id: 2, title: 'Todo 2'),
+      ];
+    } else {
+      throw Exception("Something went wrong!");
+    }
+  },
+);
 
 // A simple data class to represent a Todo item.
 class TodoData {
@@ -33,19 +55,17 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class TodoDisplayHandler extends StatelessWidget {
-  TodoDisplayHandler({super.key});
-
-  // ! Sample static todo list.  We will change this.
-  final List<TodoData> todos = [
-    TodoData(id: 0, title: 'Todo 0'),
-    TodoData(id: 1, title: 'Todo 1'),
-    TodoData(id: 2, title: 'Todo 2'),
-  ];
+class TodoDisplayHandler extends ConsumerWidget {
+  const TodoDisplayHandler({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return TodoDisplay(todos: todos);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final todos = ref.watch(todoFutureProvider);
+    return todos.when(
+      data: (data) => TodoDisplay(todos: data),
+      error: (error, stackTrace) => ErrorDisplay(error: error),
+      loading: () => LoadingDisplay(),
+    );
   }
 }
 
@@ -74,5 +94,25 @@ class TodoDisplay extends StatelessWidget {
             .toList(),
       ),
     );
+  }
+}
+
+class LoadingDisplay extends StatelessWidget {
+  const LoadingDisplay({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(child: const CircularProgressIndicator());
+  }
+}
+
+class ErrorDisplay extends StatelessWidget {
+  const ErrorDisplay({super.key, this.error});
+
+  final Object? error;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(child: Text("An error occurred: ${error.toString()}"));
   }
 }

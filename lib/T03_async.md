@@ -6,10 +6,7 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(
-    // Wrap the entire app in ProviderScope
-    ProviderScope(child: const MyApp()),
-  );
+  runApp(const MyApp());
 }
 
 // A simple data class to represent a Todo item.
@@ -81,6 +78,25 @@ class TodoDisplay extends StatelessWidget {
   }
 }
 
+class LoadingDisplay extends StatelessWidget {
+  const LoadingDisplay({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(child: const CircularProgressIndicator());
+  }
+}
+
+class ErrorDisplay extends StatelessWidget {
+  const ErrorDisplay({super.key, this.error});
+
+  final Object? error;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(child: Text("An error occurred: ${error.toString()}"));
+  }
+}
 ```
 
 ## 2. Install and import Library
@@ -123,8 +139,8 @@ void main() {
 
 Import `dart:math` at the top of the file:
 
-```
-import 'package:flutter/material.dart';
+```dart
+import 'dart:math';
 ```
 
 Create a `FutureProvider` that simulates fetching data asynchronously:
@@ -151,3 +167,40 @@ final todoFutureProvider = FutureProvider<List<TodoData>>(
 
 - The `FutureProvider` is used to handle asynchronous data fetching.
 - Change the number in the if condition to a value greater than 1 to simulate an error.
+
+## 5. Consuming the Provider
+
+Change the `TodoDisplayHandler` to extend `ConsumerWidget` instead of `StatelessWidget`:
+
+```dart
+class TodoDisplayHandler extends ConsumerWidget {
+  const TodoDisplayHandler({super.key});
+}
+```
+
+- Note the addition of `const` constructor.
+
+Add `ref` parameter to the `build` method:
+
+```dart
+@override
+Widget build(BuildContext context, WidgetRef ref) {...}
+```
+
+Consume the `todoFutureProvider` using `ref.watch`:
+
+```dart
+final todos = ref.watch(todoFutureProvider);
+```
+
+Update the `build` method to handle loading, error, and data states:
+
+```dart
+return todos.when(
+   data: (data) => TodoDisplay(todos: data),
+   error: (error, stackTrace) => ErrorDisplay(error: error),
+   loading: () => LoadingDisplay(),
+ );
+```
+
+- Experiment with the value of `rand` in the provider to see different states.
