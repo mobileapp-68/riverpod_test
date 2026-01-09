@@ -6,29 +6,11 @@ void main() {
   runApp(
     // Wrap the entire app in ProviderScope
     ProviderScope(
-      child: const MyApp(),
+      child: MyApp(),
       retry: (retryCount, error) => null,
     ),
   );
 }
-
-final todoFutureProvider = FutureProvider<List<TodoData>>(
-  (ref) async {
-    await Future.delayed(Duration(seconds: 1));
-
-    double rand = Random().nextDouble();
-    // Simulate a success or failure based on random value
-    if (rand > 1) {
-      return <TodoData>[
-        TodoData(id: 0, title: 'Todo 0'),
-        TodoData(id: 1, title: 'Todo 1'),
-        TodoData(id: 2, title: 'Todo 2'),
-      ];
-    } else {
-      throw Exception("Something went wrong!");
-    }
-  },
-);
 
 // A simple data class to represent a Todo item.
 class TodoData {
@@ -55,43 +37,107 @@ class MyApp extends StatelessWidget {
   }
 }
 
+class TodoAsyncNotifier extends AsyncNotifier<List<TodoData>> {
+  @override
+  Future<List<TodoData>> build() async {
+    await Future.delayed(Duration(seconds: 1));
+    return <TodoData>[
+      TodoData(id: 0, title: 'Todo 0'),
+      TodoData(id: 1, title: 'Todo 1'),
+      TodoData(id: 2, title: 'Todo 2'),
+    ];
+  }
+
+  void addTodo() async {
+    state = AsyncLoading(); // Optionally set loading state
+    await Future.delayed(Duration(milliseconds: 500));
+    state = await AsyncValue.guard(() async {
+      final List<TodoData> todos = state.value ?? [];
+      int id = todos.map((todo) => todo.id).reduce(max) + 1;
+      final newTodos = [...todos, TodoData(id: id, title: "Todo $id")];
+      return newTodos;
+    });
+  }
+
+  void removeLastTodo() async {
+    state = AsyncLoading(); // Optionally set loading state
+    await Future.delayed(Duration(milliseconds: 500));
+    final List<TodoData> todos = state.value ?? [];
+    if (todos.length > 1) {
+      state = AsyncData(todos.sublist(0, todos.length - 1));
+    } else {
+      state = AsyncData(todos);
+    }
+  }
+}
+
+final todoAsyncNotifierProvider = AsyncNotifierProvider(TodoAsyncNotifier.new);
+
 class TodoDisplayHandler extends ConsumerWidget {
   const TodoDisplayHandler({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final todos = ref.watch(todoFutureProvider);
-    return todos.when(
-      data: (data) => TodoDisplay(todos: data),
-      error: (error, stackTrace) => ErrorDisplay(error: error),
-      loading: () => LoadingDisplay(),
+    final todos = ref.watch(todoAsyncNotifierProvider);
+    return Column(
+      spacing: 10,
+      children: [
+        // ? Show data when available
+        if (todos.hasValue)
+          TodoDisplay(todos: todos.value!)
+        else if (todos.hasError)
+          ErrorDisplay(error: todos.error)
+        else
+          LoadingDisplay(),
+        // ? Show loading indicator when in loading state
+        if (todos.isLoading) LoadingDisplay(),
+      ],
     );
   }
 }
 
-class TodoDisplay extends StatelessWidget {
+class TodoDisplay extends ConsumerWidget {
   const TodoDisplay({super.key, required this.todos});
 
   final List<TodoData> todos;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Center(
       child: Column(
         mainAxisAlignment: .start,
         crossAxisAlignment: .start,
         spacing: 10,
-        children: todos
-            .map(
-              (todo) => Row(
-                mainAxisSize: .min,
-                spacing: 10,
-                children: [
-                  Text(todo.title),
-                ],
+        children: [
+          Row(
+            mainAxisSize: .min,
+            spacing: 10,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  ref.read(todoAsyncNotifierProvider.notifier).addTodo();
+                },
+                child: Text("Add"),
               ),
-            )
-            .toList(),
+              ElevatedButton(
+                onPressed: () {
+                  ref.read(todoAsyncNotifierProvider.notifier).removeLastTodo();
+                },
+                child: Text("Remove Last"),
+              ),
+            ],
+          ),
+          ...todos.map(
+            (todo) => Row(
+              mainAxisSize: .min,
+              spacing: 10,
+              children: [
+                Text("(${todo.id})"),
+                Text(todo.title),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

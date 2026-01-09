@@ -1,6 +1,6 @@
 # Riverpod Tutorial: Synchronous Providers (Immutable State)
 
-# Start Code
+# Starter Code
 
 ```dart
 import 'package:flutter/material.dart';

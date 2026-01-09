@@ -46,6 +46,7 @@ final todoFutureProvider = FutureProvider<List<TodoData>>(
 class TodoAsyncNotifier extends AsyncNotifier<List<TodoData>> {
   @override
   Future<List<TodoData>> build() async {
+    await Future.delayed(Duration(seconds: 1)); // Simulate a network delay
     return <TodoData>[
       TodoData(id: 0, title: 'Todo 0'),
       TodoData(id: 1, title: 'Todo 1'),
