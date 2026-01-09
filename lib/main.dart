@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(
+    // Wrap the entire app in ProviderScope
+    ProviderScope(child: const MyApp()),
+  );
 }
 
 // A simple data class to represent a Todo item.
@@ -16,7 +20,21 @@ class TodoData {
 }
 
 class MyApp extends StatelessWidget {
-  MyApp({super.key});
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text("My Todo (Async)")),
+        body: TodoDisplayHandler(),
+      ),
+    );
+  }
+}
+
+class TodoDisplayHandler extends StatelessWidget {
+  TodoDisplayHandler({super.key});
 
   // ! Sample static todo list.  We will change this.
   final List<TodoData> todos = [
@@ -27,27 +45,33 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: const Text('Todo List')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: .start,
-            crossAxisAlignment: .start,
-            spacing: 10,
-            children: todos
-                .map(
-                  (todo) => Row(
-                    mainAxisSize: .min,
-                    spacing: 10,
-                    children: [
-                      Text(todo.title),
-                    ],
-                  ),
-                )
-                .toList(),
-          ),
-        ),
+    return TodoDisplay(todos: todos);
+  }
+}
+
+class TodoDisplay extends StatelessWidget {
+  const TodoDisplay({super.key, required this.todos});
+
+  final List<TodoData> todos;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: .start,
+        crossAxisAlignment: .start,
+        spacing: 10,
+        children: todos
+            .map(
+              (todo) => Row(
+                mainAxisSize: .min,
+                spacing: 10,
+                children: [
+                  Text(todo.title),
+                ],
+              ),
+            )
+            .toList(),
       ),
     );
   }

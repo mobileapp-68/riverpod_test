@@ -144,4 +144,8 @@ Change the constructor of `MyApp` to be constant:
 const MyApp({super.key});
 ```
 
-This is because `ConsumerWidget` can be a constant widget since it does not hold any mutable state itself.
+Update the `main` function to use a constant constructor for `MyApp`:
+
+```dart
+ProviderScope(child: const MyApp()),
+```
