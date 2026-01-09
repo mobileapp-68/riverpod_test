@@ -22,7 +22,7 @@ class TodoData {
 
 // An immutable provider that provides a list of TodoData.
 final todoProvider = Provider(
-  (_) => <TodoData>[
+  (Ref ref) => <TodoData>[
     TodoData(id: 0, title: 'Todo 0'),
     TodoData(id: 1, title: 'Todo 1'),
     TodoData(id: 2, title: 'Todo 2'),
