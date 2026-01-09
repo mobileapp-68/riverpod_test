@@ -1,4 +1,4 @@
-# Riverpod Tutorial: Synchronous Providers (Immutable State)
+# Riverpod Tutorial: Asynchronous Providers (Immutable State)
 
 # Starter Code
 

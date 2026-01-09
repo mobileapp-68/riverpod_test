@@ -1,4 +1,4 @@
-# Riverpod Tutorial: Synchronous Providers (Mutable State)
+# Riverpod Tutorial: Asynchronous Providers (Mutable State)
 
 # Starter Code
 
@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: Text("My Todo (Async)")),
+        appBar: AppBar(title: Text("My Todo (Async Mutable)")),
         body: TodoDisplayHandler(),
       ),
     );
