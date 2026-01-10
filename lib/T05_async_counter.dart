@@ -12,45 +12,26 @@ void main() {
   );
 }
 
-class TodoAsyncNotifier extends AsyncNotifier<List<TodoData>> {
+class TodoAsyncNotifier extends AsyncNotifier<int> {
   @override
-  Future<List<TodoData>> build() async {
+  Future<int> build() async {
     await Future.delayed(Duration(seconds: 1)); // Simulate a network delay
-    return <TodoData>[
-      TodoData(id: 0, title: 'Todo 0'),
-      TodoData(id: 1, title: 'Todo 1'),
-      TodoData(id: 2, title: 'Todo 2'),
-    ];
+    return 0;
   }
 
-  Future<void> addTodo() async {
+  Future<void> add() async {
     state = AsyncLoading(); // Optionally set loading state
     await Future.delayed(Duration(milliseconds: 500));
-    state = await AsyncValue.guard(() async {
-      final List<TodoData> todos = state.value ?? [];
-      int id = todos.map((todo) => todo.id).reduce(max) + 1;
-      final newTodos = [...todos, TodoData(id: id, title: "Todo $id")];
-      return newTodos;
-    });
-  }
-
-  Future<void> removeLastTodo() async {
-    state = AsyncLoading(); // Optionally set loading state
-    await Future.delayed(Duration(milliseconds: 500));
-    final List<TodoData> todos = state.value ?? [];
-    if (todos.length > 1) {
-      state = AsyncData(todos.sublist(0, todos.length - 1));
-    } else {
-      state = AsyncData(todos);
-    }
+    final int currentCount = state.value ?? 0;
+    state = AsyncData(currentCount + 1);
   }
 
   Future<void> periodicAdd() async {
     while (true) {
       await Future.delayed(Duration(seconds: 1));
-      await addTodo();
-      print(state.value!.length);
-      if (state.value!.length >= 10) {
+      await add();
+      print(state.value);
+      if (state.value! >= 10) {
         break;
       }
     }
@@ -59,17 +40,6 @@ class TodoAsyncNotifier extends AsyncNotifier<List<TodoData>> {
 
 final todoAsyncNotifierProvider = AsyncNotifierProvider(TodoAsyncNotifier.new);
 
-// A simple data class to represent a Todo item.
-class TodoData {
-  int id;
-  final String title;
-
-  TodoData({
-    required this.id,
-    required this.title,
-  });
-}
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -77,7 +47,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: Text("My Todo (Async Mutable)")),
+        appBar: AppBar(title: Text("Counter (Async Mutable)")),
         body: TodoDisplayHandler(),
       ),
     );
@@ -89,19 +59,19 @@ class TodoDisplayHandler extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final todos = ref.watch(todoAsyncNotifierProvider);
-    return todos.when(
-      data: (data) => TodoDisplay(todos: data),
+    final count = ref.watch(todoAsyncNotifierProvider);
+    return count.when(
+      data: (data) => CountDisplay(count: data),
       error: (error, stackTrace) => ErrorDisplay(error: error),
       loading: () => LoadingDisplay(),
     );
   }
 }
 
-class TodoDisplay extends ConsumerWidget {
-  const TodoDisplay({super.key, required this.todos});
+class CountDisplay extends ConsumerWidget {
+  const CountDisplay({super.key, required this.count});
 
-  final List<TodoData> todos;
+  final int count;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -117,15 +87,9 @@ class TodoDisplay extends ConsumerWidget {
             children: [
               ElevatedButton(
                 onPressed: () {
-                  ref.read(todoAsyncNotifierProvider.notifier).addTodo();
+                  ref.read(todoAsyncNotifierProvider.notifier).add();
                 },
                 child: Text("Add"),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  ref.read(todoAsyncNotifierProvider.notifier).removeLastTodo();
-                },
-                child: Text("Remove Last"),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -135,15 +99,9 @@ class TodoDisplay extends ConsumerWidget {
               ),
             ],
           ),
-          ...todos.map(
-            (todo) => Row(
-              mainAxisSize: .min,
-              spacing: 10,
-              children: [
-                Text("(${todo.id})"),
-                Text(todo.title),
-              ],
-            ),
+          Text(
+            "Count: $count",
+            style: TextStyle(fontSize: 24),
           ),
         ],
       ),
