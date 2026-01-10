@@ -29,8 +29,10 @@ class TodoAsyncNotifier extends AsyncNotifier<int> {
   Future<void> periodicAdd() async {
     while (true) {
       await Future.delayed(Duration(seconds: 1));
-      await add();
-      print(state.value);
+      print("Before add: ${state.value}");
+      final int currentCount = state.value ?? 0;
+      state = AsyncData(currentCount + 1);
+      print("After add: ${state.value}");
       if (state.value! >= 10) {
         break;
       }
