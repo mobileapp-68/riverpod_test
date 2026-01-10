@@ -44,17 +44,6 @@ class TodoAsyncNotifier extends AsyncNotifier<List<TodoData>> {
       state = AsyncData(todos);
     }
   }
-
-  Future<void> periodicAdd() async {
-    while (true) {
-      await Future.delayed(Duration(seconds: 1));
-      await addTodo();
-      print(state.value!.length);
-      if (state.value!.length >= 10) {
-        break;
-      }
-    }
-  }
 }
 
 final todoAsyncNotifierProvider = AsyncNotifierProvider(TodoAsyncNotifier.new);
@@ -126,12 +115,6 @@ class TodoDisplay extends ConsumerWidget {
                   ref.read(todoAsyncNotifierProvider.notifier).removeLastTodo();
                 },
                 child: Text("Remove Last"),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  ref.read(todoAsyncNotifierProvider.notifier).periodicAdd();
-                },
-                child: Text("Periodic Add"),
               ),
             ],
           ),

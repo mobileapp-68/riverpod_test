@@ -1,0 +1,46 @@
+import { useState, useRef } from "react";
+
+function App() {
+  // This example show the issue of stale closures in React hooks.
+  // When the periodicAdd function is called, it captures the initial value of count.
+  // As a result, the console.log inside the loop always logs the initial count value + 1,
+  // instead of the updated count value.
+  const [count, setCount] = useState(0);
+  async function periodicAddStale() {
+    while (true) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      setCount((c) => c + 1);
+      console.log(
+        `Time: ${new Date().toLocaleTimeString()} Count is now: ${count + 1}`
+      );
+    }
+  }
+
+  // To fix the stale closure issue, we use a ref to always have access to the latest count value.
+  const countRef = useRef(count);
+  async function periodicAddFixed() {
+    while (true) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      setCount((c) => {
+        countRef.current = c + 1;
+        return countRef.current;
+      });
+      console.log(
+        `Time: ${new Date().toLocaleTimeString()} Count is now: ${
+          countRef.current
+        }`
+      );
+    }
+  }
+
+  return (
+    <>
+      <h1>Count: {count}</h1>
+      <button onClick={() => setCount(count + 1)}>Add</button>
+      <button onClick={periodicAddStale}>Start Periodic Add</button>
+      <button onClick={periodicAddFixed}>Start Periodic Add (Fixed)</button>
+    </>
+  );
+}
+
+export default App;

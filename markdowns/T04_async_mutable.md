@@ -216,16 +216,10 @@ return todos.when(
 
 ## 6. Add and Remove Functionality
 
-Import `dart:math` at the top of the file:
-
-```dart
-import 'dart:math';
-```
-
 Add methods to the `TodoAsyncNotifier` class to add and remove todos:
 
 ```dart
-void addTodo() async {
+Future<void> addTodo() async {
     state = AsyncLoading(); // Optionally set loading state
     await Future.delayed(Duration(milliseconds: 500));
     state = await AsyncValue.guard(() async {
@@ -238,7 +232,7 @@ void addTodo() async {
 ```
 
 ```dart
-void removeLastTodo() async {
+Future<void> removeLastTodo() async {
     state = AsyncLoading(); // Optionally set loading state
     await Future.delayed(Duration(milliseconds: 500));
     final List<TodoData> todos = state.value ?? [];

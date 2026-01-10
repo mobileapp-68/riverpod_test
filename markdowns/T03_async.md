@@ -180,7 +180,7 @@ class TodoDisplayHandler extends ConsumerWidget {
 
 - Note the addition of `const` constructor.
 
-Add `ref` parameter to the `build` method:
+Add `ref` parameter to the `build` method in `TodoDisplayHandler`:
 
 ```dart
 @override
@@ -193,7 +193,7 @@ Consume the `todoFutureProvider` using `ref.watch`:
 final todos = ref.watch(todoFutureProvider);
 ```
 
-Update the `build` method to handle loading, error, and data states:
+Update the `build` method in `TodoDisplayHandler` to handle loading, error, and data states:
 
 ```dart
 return todos.when(
